@@ -1,3 +1,5 @@
+require('dotenv').config();  // Asegúrate de tener un archivo .env para las variables de entorno
+
 const express = require('express');
 const cors = require('cors');
 const { Sequelize, DataTypes } = require('sequelize');
@@ -7,8 +9,8 @@ app.use(cors());
 app.use(express.json());
 
 // Conexión a PostgreSQL
-const sequelize = new Sequelize('reto_db', 'postgres', 'Dinosaurio123!', {
-  host: 'localhost',
+const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
+  host: process.env.DB_HOST,
   dialect: 'postgres',
 });
 
@@ -16,8 +18,8 @@ const sequelize = new Sequelize('reto_db', 'postgres', 'Dinosaurio123!', {
 const Usuario = sequelize.define('Usuario', {
   username: { type: DataTypes.STRING, unique: true },
   password: DataTypes.STRING,
+  email: { type: DataTypes.STRING, allowNull: true },  // Agregamos el campo email
 });
-
 
 const Ticket = sequelize.define('Ticket', {
   nombre: { type: DataTypes.STRING, allowNull: false },
@@ -29,18 +31,9 @@ const Ticket = sequelize.define('Ticket', {
 
 // Modelo de Solicitud para guardar las solicitudes de cuenta
 const Solicitud = sequelize.define('Solicitud', {
-  nombre: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  email: {
-    type: DataTypes.STRING,
-    allowNull: false
-  },
-  mensaje: {
-    type: DataTypes.TEXT,
-    allowNull: false
-  }
+  nombre: { type: DataTypes.STRING, allowNull: false },
+  email: { type: DataTypes.STRING, allowNull: false },
+  mensaje: { type: DataTypes.TEXT, allowNull: false },
 });
 
 // Endpoint de prueba
@@ -99,7 +92,6 @@ app.post('/api/contacto', async (req, res) => {
   try {
     // Guardamos la solicitud en la base de datos
     const nuevaSolicitud = await Solicitud.create({ nombre, email, mensaje });
-
     res.json({ success: true, message: 'Tu solicitud ha sido enviada al administrador.' });
   } catch (err) {
     console.error('❌ Error al guardar la solicitud:', err);
@@ -204,6 +196,11 @@ app.delete('/api/usuarios/:id', async (req, res) => {
   }
 });
 
+// Usar el puerto proporcionado por la plataforma o el puerto por defecto (3000)
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`🚀 Servidor corriendo en el puerto ${PORT}`);
+});
 
 // Conectar a DB y arrancar servidor
 sequelize.authenticate()
@@ -213,7 +210,6 @@ sequelize.authenticate()
   })
   .then(() => {
     console.log('📦 Tablas sincronizadas');
-    app.listen(3000, () => console.log('🚀 Servidor corriendo en puerto 3000'));
   })
   .catch(err => {
     console.error('❌ Error al conectar o sincronizar:', err);
