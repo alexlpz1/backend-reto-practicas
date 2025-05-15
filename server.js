@@ -8,13 +8,20 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Conexión a PostgreSQL
-const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
-  host: process.env.DB_HOST,
-  dialect: 'postgres',
-});
+// Conexión a PostgreSQL utilizando variables de entorno
+const sequelize = new Sequelize(
+  process.env.DB_NAME,     // El nombre de la base de datos
+  process.env.DB_USER,     // El usuario de la base de datos
+  process.env.DB_PASSWORD, // La contraseña de la base de datos
+  {
+    host: process.env.DB_HOST, // Host donde está la base de datos (por ejemplo, Render)
+    dialect: 'postgres',  // El tipo de base de datos
+    port: process.env.DB_PORT || 5432,  // Puerto de conexión a la base de datos
+  }
+);
 
-// Modelos
+// Modelos de base de datos
+
 const Usuario = sequelize.define('Usuario', {
   username: { type: DataTypes.STRING, unique: true },
   password: DataTypes.STRING,
